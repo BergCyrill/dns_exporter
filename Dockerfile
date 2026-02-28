@@ -3,6 +3,7 @@ ARG TARGET_PLATFORM=linux/amd64
 FROM --platform=$TARGET_PLATFORM python:3.13-alpine@sha256:bb1f2fdb1065c85468775c9d680dcd344f6442a2d1181ef7916b60a623f11d40 AS builder
 # install dependenciess for building package
 RUN apk add -U -l -u bsd-compat-headers cargo gcc git libffi-dev musl-dev openssl-dev
+RUN pip install -U pip --no-cache-dir
 # install dns_exporter
 RUN --mount=type=bind,readwrite,source=/,target=/src pip install --user /src
 # cleanup
@@ -13,6 +14,8 @@ RUN \
 --mount=type=bind,from=builder,source=/root/.local,target=/tmp/.local \
 --mount=type=bind,source=/src/dns_exporter/dns_exporter_example.yml,target=/tmp/dns_exporter.yml \
 <<EOF
+# upgrade pip to fix CVE in shipped version
+pip install -U pip --no-cache-dir
 # add nonroot group
 addgroup -g 65532 -S nonroot
 # add nonroot user
