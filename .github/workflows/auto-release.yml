@@ -1,0 +1,45 @@
+---
+name: Auto-release on dependency merge
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - v1.1.0-patched
+    types:
+      - closed
+
+jobs:
+  auto-release:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.merged == true &&
+      (github.actor == 'dependabot[bot]' ||
+      github.actor == 'digestabot[bot]')
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          fetch-depth: 0
+          ref: v1.1.0-patched
+
+      - name: Compute next post-release tag
+        id: next_tag
+        run: |
+          latest_n=$(git tag -l 'v1.1.0.post*' | sed 's/.*\.post//' | sort -n | tail -1)
+          if [ -z "$latest_n" ]; then
+            next="v1.1.0.post1"
+          else
+            next="v1.1.0.post$((latest_n+1))"
+          fi
+          echo "tag=$next" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.next_tag.outputs.tag }}
+          git push origin refs/tags/${{ steps.next_tag.outputs.tag }}
+...
