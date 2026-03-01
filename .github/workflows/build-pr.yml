@@ -7,7 +7,7 @@ on:  # yamllint disable-line rule:truthy
       - v1.1.0-patched
 
 jobs:
-  build:
+  docker-build-pr:
     runs-on: ubuntu-latest
     permissions:
       contents: read
