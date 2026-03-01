@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: v1.1.0-patched
 
       - name: Update Docker image digests
         uses: chainguard-dev/digestabot@v1.2.1

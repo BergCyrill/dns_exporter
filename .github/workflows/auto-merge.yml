@@ -1,0 +1,25 @@
+---
+name: Auto-merge Dependabot and Digestabot PRs
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - v1.1.0-patched
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: |
+      github.actor == 'dependabot[bot]' ||
+      github.actor == 'digestabot[bot]'
+    steps:
+      - name: Enable auto-merge
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+...
